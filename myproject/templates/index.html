@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+
+        <title>Leaflet Test</title>
+
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="/static/css/style.css">
+        <!-- Leaflet CSS -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+        <!-- Leaflet JS -->
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="apple-touch-icon" sizes="76x76" href="static/assets/img/apple-icon.png">
+        <link rel="icon" type="image/png" href="static/assets/img/favicon.png">
+        <!-- Fonts and icons -->
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+        <!-- Nucleo Icons -->
+        <link href="static/assets/css/nucleo-icons.css" rel="stylesheet" />
+        <link href="static/assets/css/nucleo-svg.css" rel="stylesheet" />
+        <!-- Font Awesome Icons -->
+        <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+        <link href="static/assets/css/nucleo-svg.css" rel="stylesheet" />
+        <!-- CSS Files -->
+        <link id="pagestyle" href="static/assets/css/argon-dashboard.css?v=2.0.0" rel="stylesheet" />
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+
+    </head>
+
+    <body class="g-sidenav-show   bg-gray-100">
+        <div class="min-height-300 bg-primary position-absolute w-100"></div>
+        <main class="main-content position-relative border-radius-lg ">
+            <!-- Navbar -->
+            <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur" data-scroll="false">
+                <div class="container-fluid py-1 px-3">
+                    <h6 class="font-weight-bolder text-white mb-0">LEAFLET</h6>
+                </div>
+            </nav>
+            <!-- End Navbar -->
+            <div class="container-fluid py-4">
+                <div class="row">
+                    <div class="col-lg-7">
+                        <div class="card mb-4">
+                            <div class="card-body px-0 pt-0 pb-2">
+                                <div class="float-child" id="map" style="width: 95%; height: 60vh;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="card mb-4">
+                            <div class="card-body px-0 pt-0 pb-2">
+                                <div class="float-child" id="saveBtn">
+                                    <a href="/return-files/" target="blank"><button class='btn btn-default'>Download JSON File</button></a>
+                                    <br>
+                                    <br>
+                                    <button name="button" class="btn btn-default" id="saveBtn" value="">Noktayı Kaydet</button>
+                                </div>
+                                <div class="float-child" id="latLngList" style="width: 70%; height: 200px; border-style: dashed;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <footer class="footer pt-3  ">
+                    <div class="container-fluid">
+                        <div class="row align-items-center justify-content-lg-between">
+                            <div class="col-lg-6 mb-lg-0 mb-4">
+                                <div class="copyright text-center text-sm text-muted text-lg-start">
+                                    © <script>
+                                    document.write(new Date().getFullYear())
+                                    </script>,
+                                    made with <i class="fa fa-heart"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+        <!--   Core JS Files   -->
+        <script src="static/assets/js/core/popper.min.js"></script>
+        <script src="static/assets/js/core/bootstrap.min.js"></script>
+        <script src="static/assets/js/plugins/perfect-scrollbar.min.js"></script>
+        <script src="static/assets/js/plugins/smooth-scrollbar.min.js"></script>
+
+        <script type="text/javascript" charset="utf-8">
+            $(document).ready(function() {
+
+                var socket = io();
+
+                // get data from python
+                // socket.on('my_event', function(msg) {
+                //     for (let i = 0; i < msg.data.length; i++) {
+                //         cp = msg.data.lat + ", " + msg.data.lng;
+                //         document.getElementById('latLngList').innerText = cp;                        
+                //     }
+                // });
+
+                // create a map with a center point of İzmit
+                var map = L.map('map').setView([40.766666, 29.916668], 6);
+
+                var tiles = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+                    maxZoom: 18,
+                    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                    id: 'mapbox/streets-v11',
+                    tileSize: 512,
+                    zoomOffset: -1
+                }).addTo(map);
+
+                var centerPoint;
+                // when click the save button
+                $('#saveBtn').on('click', function() {
+                    centerPoint = map.getCenter().lat + ", " + map.getCenter().lng + "\n";
+                    document.getElementById('latLngList').innerText += centerPoint;
+                    L.marker([map.getCenter().lat, map.getCenter().lng]).addTo(map);
+                    // send data to python
+                    socket.emit('connect_test', {'data': map.getCenter()})
+                });
+
+            });
+        </script>
+    </body>
+</html>
